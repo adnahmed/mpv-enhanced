@@ -23,6 +23,11 @@ function Get-VS {
 
 # Heavily modified version of the function from shinchiro's MPV bootstrap script. (found on the official sourceforge mirror)
 function Get-Mpv {
+    # Force TLS for secure connection
+    [Net.ServicePointManager]::SecurityProtocol = `
+        [Net.SecurityProtocolType]::Tls12 -bor `
+        [Net.SecurityProtocolType]::Tls11 -bor `
+        [Net.SecurityProtocolType]::Tls
     Write-Host "Fetching RSS feed for mpv" -ForegroundColor Green
     $result = [xml](New-Object System.Net.WebClient).DownloadString($MpvRssUrl)
     $latest = $result.rss.channel.item.link[0]
