@@ -15,7 +15,7 @@ from vs_script.expensive_clip_mode import ExpensiveClipMode
 # =============================================================================
 
 # The RIFE model to use. Recommended ones are 4.26, 4.25 or 4.25.lite
-rife_model = "4.25.lite"
+rife_model = "4.25"
 
 # Interpolation scale
 scale = 1
@@ -32,7 +32,7 @@ ensemble = False
 target_mode = TargetFpsMode.fixed_multiplier(2)
 
 # Disable when source media is above threshold
-disable_fps_threshold = 60
+disable_fps_threshold = 144
 
 
 # =============================================================================
@@ -40,10 +40,10 @@ disable_fps_threshold = 60
 # =============================================================================
 
 # You can change these to better match your display or source media
-output_format = vs.YUV420P10
-output_colorspace = vs.MATRIX_BT2020_NCL
-output_transfer = vs.TRANSFER_BT2020_10
-output_primaries = vs.PRIMARIES_BT2020
+output_format = vs.YUV420P8
+output_colorspace = vs.MATRIX_BT709
+output_transfer = vs.TRANSFER_BT709
+output_primaries = vs.PRIMARIES_BT709
 
 
 # =============================================================================
@@ -52,13 +52,13 @@ output_primaries = vs.PRIMARIES_BT2020
 
 # Resolution threshold for what determines if a clip is "expensive"
 # Anything ABOVE this resolution will be considered expensive.
-expensive_res_threshold = (3840, 2160)
+expensive_res_threshold = (1344,756)
 
 # How do we handle expensive clips?
 expensive_clip_handling = ExpensiveClipMode.DOWNSCALE
 
 # Resolution to downscale to if expensive_clip_handling is "downscale"
-downscale_res = (1920, 1080)
+downscale_res = (1344, 756)
 
 # To use scene change detection or not
 sc = True
@@ -75,14 +75,17 @@ gpu_index = 0
 gpu_format = vs.RGBH
 
 # Uses Nvidia TensorRT framework which is faster.
-# It also takes a million years to build an RT engine for each resolution and config, but it is much faster than regular.
+# It also takes a mi+llion years to build an RT engine for each resolution and config, but it is much faster than regular.
 tensorrt = True
 
 # Enable for TensorRT debug logging
 tensorrt_debug = False
 
 # 0 is min - 5 is max. This will increase the time it takes to build the RT engine
-tensorrt_optimization = 3
+# Increased TensorRT optimization to 5. Higher optimization levels can lead
+# to more aggressive graph optimizations and potentially better utilization,
+# though with longer build times.
+tensorrt_optimization = 5
 
 # Dynamic shapes allows TensorRT to build a single engine for multiple resolutions.
 # Meaning that you only have to compile the engine once, and it will work for all resolutions within the min-max range.
@@ -94,13 +97,21 @@ tensorrt_static_shape = True
 tensorrt_min_shape = [128, 128]
 
 # Optimized size of dynamic shape
-tensorrt_opt_shape = [3840, 2160]
+# If using static shapes, opt_shape becomes the target static shape.
+# Set to a commonly used resolution like 1920x1080 to maximize utilization
+# when processing Full HD content. Adjust based on your typical source resolution.
+tensorrt_opt_shape = [1344, 756]
 
 # Max size of dynamic shape
-tensorrt_max_shape = [
-    expensive_res_threshold[0],
-    expensive_res_threshold[1],
-]
+tensorrt_max_shape = [1344, 756]
+
+# Advanced TensorRT optimization settings for maximum GPU utilization
+# Workspace size in bytes for TensorRT (1GB for GTX 1650 Mobile - VSRIFE recommended)
+tensorrt_workspace_size = 1073741824  # 1GB
+
+# Maximum auxiliary streams for parallel kernel execution
+# Set to 8 for GTX 1650 Mobile for optimal parallelization (VSRIFE recommended)
+tensorrt_max_aux_streams = 8
 
 
 # =============================================================================

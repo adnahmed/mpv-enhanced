@@ -64,7 +64,7 @@ function Get-VSRife {
     & "./python" -m pip install -U torch torchvision torch_tensorrt --index-url $PytorchUrl --extra-index-url "https://pypi.nvidia.com"
 
     Write-Host "Installing vs-rife..."
-    & "./python" -m pip install -U vsrife
+    & "./python" -m pip install -U git+https://github.com/adnahmed/vs-rife
 
     # vs-rife auto-download is not working as of now, so we just download all manually.
     Write-Host "Downloading vs-rife models..."
