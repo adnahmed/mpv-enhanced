@@ -40,11 +40,40 @@ def interpolate(clip: vs.VideoNode) -> vs.VideoNode:
         # Clip is considered "expensive"
         match config.expensive_clip_handling:
             case ExpensiveClipMode.DOWNSCALE:
-                print_log(f"Clip is too expensive. Downscaling to {config.downscale_res}...")
+                print_log(f"Clip is too expensive. Downscaling before interpolation...")
+                orig_w, orig_h = clip.width, clip.height
+                aspect_ratio = orig_w / orig_h
+                
+                # Start with configured downscale resolution as maximum
+                max_w, max_h = config.downscale_res
+                
+                # Calculate target dimensions while preserving aspect ratio
+                if aspect_ratio > (max_w / max_h):
+                    # Width is the limiting factor
+                    target_w = max_w
+                    target_h = int(target_w / aspect_ratio)
+                else:
+                    # Height is the limiting factor
+                    target_h = max_h
+                    target_w = int(target_h * aspect_ratio)
+                
+                # Ensure dimensions are within TensorRT constraints and even (required by most encoders)
+                min_w, min_h = config.tensorrt_min_shape
+                max_allowed_w, max_allowed_h = config.tensorrt_max_shape
+                
+                target_w = max(min_w, min(target_w, max_allowed_w))
+                target_h = max(min_h, min(target_h, max_allowed_h))
+                
+                # Make dimensions even
+                target_w = target_w - (target_w % 2)
+                target_h = target_h - (target_h % 2)
+                
+                print_log(f"Downscaling from {orig_w}x{orig_h} to {target_w}x{target_h} (aspect ratio: {aspect_ratio:.3f})")
+                
                 clip = core.resize.Lanczos(
                     clip=clip,
-                    width=config.downscale_res[0],
-                    height=config.downscale_res[1],
+                    width=target_w,
+                    height=target_h,
                 )
             case ExpensiveClipMode.SKIP:
                 print_log("Clip is too expensive. Skipping interpolation...")
@@ -101,6 +130,8 @@ def interpolate(clip: vs.VideoNode) -> vs.VideoNode:
         trt_opt_shape=config.tensorrt_opt_shape,
         trt_max_shape=config.tensorrt_max_shape,
         trt_debug=config.tensorrt_debug,
+#        trt_workspace_size=getattr(config, 'tensorrt_workspace_size', 0),
+#        trt_max_aux_streams=getattr(config, 'tensorrt_max_aux_streams', None),
         auto_download=True,  # Downloads the model on first run.
     )
     clip = core.resize.Lanczos(
