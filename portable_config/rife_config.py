@@ -52,13 +52,13 @@ output_primaries = vs.PRIMARIES_BT709
 
 # Resolution threshold for what determines if a clip is "expensive"
 # Anything ABOVE this resolution will be considered expensive.
-expensive_res_threshold = (1344,756)
+expensive_res_threshold = (1280,720)
 
 # How do we handle expensive clips?
 expensive_clip_handling = ExpensiveClipMode.DOWNSCALE
 
 # Resolution to downscale to if expensive_clip_handling is "downscale"
-downscale_res = (1344, 756)
+downscale_res = (1280, 720)
 
 # To use scene change detection or not
 sc = True
@@ -100,10 +100,10 @@ tensorrt_min_shape = [128, 128]
 # If using static shapes, opt_shape becomes the target static shape.
 # Set to a commonly used resolution like 1920x1080 to maximize utilization
 # when processing Full HD content. Adjust based on your typical source resolution.
-tensorrt_opt_shape = [1344, 756]
+tensorrt_opt_shape = [1280, 720]
 
 # Max size of dynamic shape
-tensorrt_max_shape = [1344, 756]
+tensorrt_max_shape = [1280, 720]
 
 # Advanced TensorRT optimization settings for maximum GPU utilization
 # Workspace size in bytes for TensorRT (1GB for GTX 1650 Mobile - VSRIFE recommended)
